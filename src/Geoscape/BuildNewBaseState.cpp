@@ -259,7 +259,7 @@ void BuildNewBaseState::globeClick(Action *action)
 				}
 				if (_first)
 				{
-					_game->pushState(new BaseNameState(_base, _globe, _first));
+					_game->pushState(new BaseNameState(_base, _globe, _first, false));
 				}
 				else
 				{
