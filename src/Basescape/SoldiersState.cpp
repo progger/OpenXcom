@@ -602,7 +602,7 @@ void SoldiersState::cbxScreenActionsChange(Action *action)
 	}
 	else if (selAction == "STR_TRANSFORMATIONS_OVERVIEW")
 	{
-		_game->pushState(new SoldierTransformationListState(this, _base, _cbxScreenActions));
+		_game->pushState(new SoldierTransformationListState(_base, _cbxScreenActions));
 	}
 	else
 	{

@@ -135,7 +135,7 @@ namespace OpenXcom
  * Initializes all the elements in the Geoscape screen.
  * @param game Pointer to the core game.
  */
-GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomOutEffectDone(false), _minimizedDogfights(0)
+GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomOutEffectDone(false), _minimizedDogfights(0), _slowdownCounter(0)
 {
 	int screenWidth = Options::baseXGeoscape;
 	int screenHeight = Options::baseYGeoscape;
@@ -796,6 +796,20 @@ void GeoscapeState::timeAdvance()
 	int timeSpan = 0;
 	if (_timeSpeed == _btn5Secs)
 	{
+		if (Options::oxceGeoSlowdownFactor > 1)
+		{
+			_slowdownCounter--;
+			if (_slowdownCounter > 0)
+			{
+				// wait
+				_globe->draw();
+				return;
+			}
+			else
+			{
+				_slowdownCounter = Clamp(Options::oxceGeoSlowdownFactor, 2, 100);
+			}
+		}
 		timeSpan = 1;
 	}
 	else if (_timeSpeed == _btn1Min)
@@ -2524,15 +2538,25 @@ void GeoscapeState::time1Day()
 		}
 		if (!trainingFinishedList.empty())
 		{
-			popup(new TrainingFinishedState(base, trainingFinishedList));
+			popup(new TrainingFinishedState(base, trainingFinishedList, false));
 		}
 		// Handle psionic training
 		if (base->getAvailablePsiLabs() > 0 && Options::anytimePsiTraining)
 		{
+			std::vector<Soldier*> psiTrainingFinishedList;
 			for (std::vector<Soldier*>::const_iterator s = base->getSoldiers()->begin(); s != base->getSoldiers()->end(); ++s)
 			{
 				(*s)->trainPsi1Day();
 				(*s)->calcStatString(_game->getMod()->getStatStrings(), psiStrengthEval);
+				if ((*s)->isInPsiTraining() && (*s)->isFullyPsiTrained())
+				{
+					(*s)->setPsiTraining(false);
+					psiTrainingFinishedList.push_back(*s);
+				}
+			}
+			if (!psiTrainingFinishedList.empty())
+			{
+				popup(new TrainingFinishedState(base, psiTrainingFinishedList, true));
 			}
 		}
 	}

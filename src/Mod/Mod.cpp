@@ -1619,7 +1619,7 @@ void Mod::loadAll()
 	ModScript parser{ _scriptGlobal, this };
 	auto mods = FileMap::getRulesets();
 
-	Log(LOG_INFO) << "Loading rulesets...";
+	Log(LOG_INFO) << "Loading begins...";
 	_scriptGlobal->beginLoad();
 	_modData.clear();
 	_modData.resize(mods.size());
@@ -1648,6 +1648,7 @@ void Mod::loadAll()
 		offset += size;
 	}
 
+	Log(LOG_INFO) << "Pre-loading rulesets...";
 	// load rulesets that can affect loading vanilla resources
 	for (size_t i = 0; _modData.size() > i; ++i)
 	{
@@ -1662,6 +1663,7 @@ void Mod::loadAll()
 		}
 	}
 
+	Log(LOG_INFO) << "Loading vanilla resources...";
 	// vanilla resources load
 	_modCurrent = &_modData.at(0);
 	loadVanillaResources();
@@ -1675,6 +1677,7 @@ void Mod::loadAll()
 	_soundOffsetBattle = _sounds["BATTLE.CAT"]->getMaxSharedSounds();
 	_soundOffsetGeo = _sounds["GEO.CAT"]->getMaxSharedSounds();
 
+	Log(LOG_INFO) << "Loading rulesets...";
 	// load rest rulesets
 	for (size_t i = 0; mods.size() > i; ++i)
 	{
@@ -1690,6 +1693,7 @@ void Mod::loadAll()
 			throwModOnErrorHelper(modId, e.what());
 		}
 	}
+	Log(LOG_INFO) << "Loading rulesets done.";
 
 	//back master
 	_modCurrent = &_modData.at(0);
@@ -1848,6 +1852,7 @@ void Mod::loadAll()
 	{
 		_fixedUserOptions.erase("oxceUpdateCheck");
 		_fixedUserOptions.erase("maximizeInfoScreens"); // FIXME: make proper categorisations in the next release
+		_fixedUserOptions.erase("oxceAutoNightVisionThreshold");
 
 		const std::vector<OptionInfo> &options = Options::getOptionInfo();
 		for (std::vector<OptionInfo>::const_iterator i = options.begin(); i != options.end(); ++i)
@@ -1860,6 +1865,7 @@ void Mod::loadAll()
 		Options::save();
 	}
 
+	Log(LOG_INFO) << "Loading ended.";
 
 	sortLists();
 	loadExtraResources();
@@ -4632,7 +4638,15 @@ void Mod::loadVanillaResources()
 		for (size_t i = 0; i < ARRAYLEN(surfaceNames); ++i)
 		{
 			SurfaceSet* s = _sets[surfaceNames[i]];
-			s->setMaxSharedFrames((int)s->getTotalFrames());
+			if (s)
+			{
+				s->setMaxSharedFrames((int)s->getTotalFrames());
+			}
+			else
+			{
+				Log(LOG_ERROR) << "Surface set " << surfaceNames[i] << " not found.";
+				throw Exception("Surface set " + surfaceNames[i] + " not found.");
+			}
 		}
 		//special case for surface set that is loaded later
 		{

@@ -10,6 +10,7 @@ en-US:
   STR_CANNOT_BUILD_QUEUE_OFF: "CANNOT BUILD HERE!{SMALLLINE}Connecting facilities must finish construction first."
   STR_FACILITY_FORBIDDEN_BY_OTHER: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility forbids building this facility."
   STR_FACILITY_OTHER_FORBIDDEN_BY_THIS: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility would be forbidden by this facility."
+  STR_NOT_ENOUGH_ITEMS: "NOT ENOUGH MATERIALS!{SMALLLINE}We need more resources to build this facility.{NEWLINE}Missing> {0}: {1}"
 #ChangeHeadquartersState.cpp
   STR_MOVE_HQ_TO: "Move HQ to"
 #CraftArmorState.cpp
@@ -153,6 +154,7 @@ en-US:
   STR_IS_LOOKUP_OF: "Is lookup of:"
   STR_LOOKUP: "Lookup:"
   STR_SPAWNED_ITEM: "Spawned item:"
+  STR_SPAWNED_EVENT: "Spawned event:"
   STR_REQUIRED_BY: "Required by:"
   STR_LEADS_TO: "Leads to:"
   STR_UNLOCKS: "Unlocks:"
@@ -265,7 +267,7 @@ en-US:
   STR_NIGHT_VISION_COLOR: "Select Night Vision color"
   STR_NIGHT_VISION_COLOR_DESC: "Values from 1 to 15, each representing a different shade color."
   STR_AUTO_NIGHT_VISION_THRESHOLD: "Auto Night Vision threshold"
-  STR_AUTO_NIGHT_VISION_THRESHOLD_DESC: "If darker than this threshold, toggle Night Vision on and Personal Lights off automatically."
+  STR_AUTO_NIGHT_VISION_THRESHOLD_DESC: "If darker than this threshold, toggle Night Vision on automatically."
   STR_AUTO_SELL: "Auto-Sell Manager"
   STR_AUTO_SELL_DESC: "In the battle debriefing sell screen, any item types you sold in previous battles will be automatically marked for selling."
   STR_REMEMBER_DISABLED_CRAFT_WEAPONS: "Remember disabled craft weapons"
@@ -365,6 +367,7 @@ en-US:
   STR_DESPAWN_PENALTY: "Despawn penalty> {0}"
 #TrainingFinishedState.cpp
   STR_TRAINING_FINISHED: "Training Finished{NEWLINE}at {0}"
+  STR_PSI_TRAINING_FINISHED: "Psi Training Finished{NEWLINE}at {0}"
 #UfoDetectedState.cpp
   STR_IGNORE_UC: "IGNORE"
 #UfoTrackerState.cpp
