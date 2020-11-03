@@ -47,11 +47,13 @@ class SellState : public State
 private:
 	Base *_base;
 	DebriefingState *_debriefingState;
-	TextButton *_btnOk, *_btnCancel, *_btnTransfer;
-	TextEdit *_btnQuickSearch;
+  //TextButton *_btnOk, *_btnCancel, *_btnTransfer;
+  TextButton *_btnOk, *_btnCancel, *_btnTransfer, *_txtSell;
+  TextEdit *_btnQuickSearch;
 	Window *_window;
-	Text *_txtTitle, *_txtSales, *_txtFunds, *_txtQuantity, *_txtSell, *_txtValue, *_txtSpaceUsed;
-	ComboBox *_cbxCategory;
+  //Text *_txtTitle, *_txtSales, *_txtFunds, *_txtQuantity, *_txtSell, *_txtValue, *_txtSpaceUsed;
+  Text *_txtTitle, *_txtSales, *_txtFunds, *_txtQuantity, *_txtValue, *_txtSpaceUsed;
+  ComboBox *_cbxCategory;
 	TextList *_lstItems;
 	std::vector<TransferRow> _items;
 	std::vector<int> _rows;
@@ -66,6 +68,7 @@ private:
 	bool _reset;
 	bool _sellAllButOne;
 	bool _delayedInitDone;
+  bool _showLimits;
 	/// Gets the category of the current selection.
 	std::string getCategory(int sel) const;
 	/// Determines if the current selection belongs to a given category.
@@ -121,6 +124,8 @@ public:
 	void updateItemStrings();
 	/// Handler for changing the category filter.
 	void cbxCategoryChange(Action *action);
+
+  void txtSellClick(Action *);
 };
 
 }

@@ -2895,7 +2895,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 
 	// Set up starting base
 	const YAML::Node &startingBaseByDiff = getStartingBase(diff);
-	Base *base = new Base(this);
+  Base *base = new Base(this, save);
 	base->load(startingBaseByDiff, save, true);
 	save->getBases()->push_back(base);
 

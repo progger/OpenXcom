@@ -352,6 +352,7 @@ set ( savegame_src
   Savegame/GeoscapeEvent.cpp
   Savegame/HitLog.cpp
   Savegame/ItemContainer.cpp
+  Savegame/LimitedItemContainer.cpp
   Savegame/MissionSite.cpp
   Savegame/MovingTarget.cpp
   Savegame/Node.cpp

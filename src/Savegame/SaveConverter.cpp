@@ -652,7 +652,7 @@ void SaveConverter::loadDatLoc()
 			target = craft;
 			break;
 		case TARGET_XBASE:
-			xbase = new Base(_mod);
+      xbase = new Base(_mod, _save);
 			target = xbase;
 			break;
 		case TARGET_ABASE:

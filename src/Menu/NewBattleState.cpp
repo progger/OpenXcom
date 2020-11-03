@@ -290,7 +290,7 @@ void NewBattleState::load(const std::string &filename)
 				const Mod *mod = _game->getMod();
 				SavedGame *save = new SavedGame();
 
-				Base *base = new Base(mod);
+        Base *base = new Base(mod, save);
 				base->load(doc["base"], save, false);
 				save->getBases()->push_back(base);
 
@@ -381,7 +381,7 @@ void NewBattleState::initSave()
 {
 	const Mod *mod = _game->getMod();
 	SavedGame *save = new SavedGame();
-	Base *base = new Base(mod);
+  Base *base = new Base(mod, save);
 	const YAML::Node &starter = _game->getMod()->getDefaultStartingBase();
 	base->load(starter, save, true, true);
 	save->getBases()->push_back(base);

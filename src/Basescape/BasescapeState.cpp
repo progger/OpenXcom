@@ -261,7 +261,7 @@ void BasescapeState::setBase(Base *base)
 	else
 	{
 		// Use a blank base for special case when player has no bases
-		_base = new Base(_game->getMod());
+    _base = new Base(_game->getMod(), _game->getSavedGame());
 		_mini->setSelectedBase(0);
 		_game->getSavedGame()->setSelectedBase(0);
 	}
@@ -273,7 +273,7 @@ void BasescapeState::setBase(Base *base)
  */
 void BasescapeState::btnNewBaseClick(Action *)
 {
-	Base *base = new Base(_game->getMod());
+  Base *base = new Base(_game->getMod(), _game->getSavedGame());
 	_game->popState();
 	_game->pushState(new BuildNewBaseState(base, _globe, false));
 }

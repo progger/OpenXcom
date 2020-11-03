@@ -40,15 +40,15 @@ public:
 	/// Creates an empty item container.
 	ItemContainer();
 	/// Cleans up the item container.
-	~ItemContainer();
+  virtual ~ItemContainer();
 	/// Loads the item container from YAML.
 	void load(const YAML::Node& node);
 	/// Saves the item container to YAML.
 	YAML::Node save() const;
 	/// Adds an item to the container.
-	void addItem(const std::string &id, int qty = 1);
+  virtual void addItem(const std::string &id, int qty = 1);
 	/// Adds an item to the container.
-	void addItem(const RuleItem* item, int qty = 1);
+  virtual void addItem(const RuleItem* item, int qty = 1);
 	/// Removes an item from the container.
 	void removeItem(const std::string &id, int qty = 1);
 	/// Removes an item from the container.

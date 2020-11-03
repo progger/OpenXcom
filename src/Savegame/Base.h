@@ -31,6 +31,7 @@ class RuleCraft;
 class Soldier;
 class Craft;
 class ItemContainer;
+class LimitedItemContainer;
 class Transfer;
 class Language;
 class Mod;
@@ -92,7 +93,7 @@ private:
 	std::vector<Soldier*> _soldiers;
 	std::vector<Craft*> _crafts;
 	std::vector<Transfer*> _transfers;
-	ItemContainer *_items;
+  LimitedItemContainer *_items;
 	int _scientists, _engineers;
 	std::vector<ResearchProject *> _research;
 	std::vector<Production *> _productions;
@@ -107,7 +108,7 @@ private:
 	using Target::load;
 public:
 	/// Creates a new base.
-	Base(const Mod *mod);
+  Base(const Mod *mod, SavedGame *save);
 	/// Cleans up the base.
 	~Base();
 	/// Loads the base from YAML.
@@ -139,9 +140,9 @@ public:
 	/// Gets the base's transfers.
 	const std::vector<Transfer*> *getTransfers() const { return &_transfers; }
 	/// Gets the base's items.
-	ItemContainer *getStorageItems() { return _items; }
+  ItemContainer *getStorageItems();
 	/// Gets the base's items.
-	const ItemContainer *getStorageItems() const { return _items; }
+  const ItemContainer *getStorageItems() const;
 	/// Gets the base's scientists.
 	int getScientists() const;
 	/// Sets the base's scientists.
@@ -304,6 +305,8 @@ public:
 	BaseSumDailyRecovery getSumRecoveryPerDay() const;
 	/// Removes a craft from the base.
 	std::vector<Craft*>::iterator removeCraft(Craft *craft, bool unload);
+
+  LimitedItemContainer *getLimitedItems() { return _items; }
 };
 
 }

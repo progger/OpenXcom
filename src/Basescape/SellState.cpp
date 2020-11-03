@@ -39,7 +39,7 @@
 #include "../Savegame/Base.h"
 #include "../Savegame/Soldier.h"
 #include "../Savegame/Craft.h"
-#include "../Savegame/ItemContainer.h"
+#include "../Savegame/LimitedItemContainer.h"
 #include "../Savegame/Vehicle.h"
 #include "../Mod/RuleItem.h"
 #include "../Mod/Armor.h"
@@ -66,7 +66,7 @@ namespace OpenXcom
  * @param origin Game section that originated this state.
  */
 SellState::SellState(Base *base, DebriefingState *debriefingState, OptionsOrigin origin) : _base(base), _debriefingState(debriefingState), _sel(0), _total(0), _spaceChange(0), _origin(origin),
-	_reset(false), _sellAllButOne(false), _delayedInitDone(false)
+  _reset(false), _sellAllButOne(false), _delayedInitDone(false), _showLimits(false)
 {
 	_timerInc = new Timer(250);
 	_timerInc->onTimer((StateHandler)&SellState::increase);
@@ -96,11 +96,11 @@ void SellState::delayedInit()
 	_btnCancel = new TextButton(148, 16, 164, 176);
 	_btnTransfer = new TextButton(148, 16, 164, 176);
 	_txtTitle = new Text(310, 17, 5, 8);
-	_txtSales = new Text(150, 9, 10, 24);
+  _txtSales = new Text(150, 9, 10, 24);
 	_txtFunds = new Text(150, 9, 160, 24);
 	_txtSpaceUsed = new Text(150, 9, 160, 34);
 	_txtQuantity = new Text(54, 9, 136, 44);
-	_txtSell = new Text(96, 9, 190, 44);
+  _txtSell = new TextButton(96, 9, 172, 44);
 	_txtValue = new Text(40, 9, 270, 44);
 	_cbxCategory = new ComboBox(this, 120, 16, 10, 36);
 	_lstItems = new TextList(287, 120, 8, 54);
@@ -161,6 +161,7 @@ void SellState::delayedInit()
 	_txtQuantity->setText(tr("STR_QUANTITY_UC"));
 
 	_txtSell->setText(tr("STR_SELL_SACK"));
+  _txtSell->onMouseClick((ActionHandler)&SellState::txtSellClick);
 
 	_txtValue->setText(tr("STR_VALUE"));
 
@@ -232,6 +233,7 @@ void SellState::delayedInit()
 	{
 		const RuleItem *rule = _game->getMod()->getItem(*i, true);
 		int qty = 0;
+    int limits = -1;
 		if (_debriefingState != 0)
 		{
 			qty = _debriefingState->getRecoveredItemCount(rule);
@@ -239,6 +241,7 @@ void SellState::delayedInit()
 		else
 		{
 			qty = _base->getStorageItems()->getItem(rule);
+      limits = _base->getLimitedItems()->getItemLimit(rule);
 			if (Options::storageLimitsEnforced && (_origin == OPT_BATTLESCAPE || overfullCritical))
 			{
 				for (std::vector<Transfer*>::iterator j = _base->getTransfers()->begin(); j != _base->getTransfers()->end(); ++j)
@@ -258,9 +261,9 @@ void SellState::delayedInit()
 				}
 			}
 		}
-		if (qty > 0 && (Options::canSellLiveAliens || !rule->isAlien()))
+    if ((qty > 0 || limits >= 0) && (Options::canSellLiveAliens || !rule->isAlien()))
 		{
-			TransferRow row = { TRANSFER_ITEM, rule, tr(*i), rule->getSellCost(), qty, 0, 0 };
+      TransferRow row = { TRANSFER_ITEM, rule, tr(*i), rule->getSellCost(), qty, limits, 0 };
 			if ((_debriefingState != 0) && (_game->getSavedGame()->getAutosell(rule)))
 			{
 				row.amount = qty;
@@ -517,6 +520,8 @@ void SellState::updateList()
 			}
 		}
 
+    if (!_showLimits && _items[i].qtySrc == 0) continue;
+
 		std::string name = _items[i].name;
 		bool ammo = false;
 		if (_items[i].type == TRANSFER_ITEM)
@@ -530,10 +535,27 @@ void SellState::updateList()
 		}
 		std::ostringstream ssQty, ssAmount;
 		ssQty << _items[i].qtySrc - _items[i].amount;
-		ssAmount << _items[i].amount;
+    //ssAmount << (_showLimits ? _items[i].qtyDst : _items[i].amount);
+
+    if (_showLimits)
+    {
+      if (_items[i].qtyDst >= 0)
+      {
+        ssAmount << _items[i].qtyDst;
+      }
+      else
+      {
+        ssAmount << "∞";
+      }
+    }
+    else
+    {
+      ssAmount << _items[i].amount;
+    }
+
 		_lstItems->addRow(4, name.c_str(), ssQty.str().c_str(), ssAmount.str().c_str(), Unicode::formatFunding(_items[i].cost).c_str());
 		_rows.push_back(i);
-		if (_items[i].amount > 0)
+    if (_showLimits ? _items[i].type == TRANSFER_ITEM && _items[i].qtyDst >= 0 : _items[i].amount > 0)
 		{
 			_lstItems->setRowColor(_rows.size() - 1, _lstItems->getSecondaryColor());
 		}
@@ -643,6 +665,13 @@ void SellState::btnOkClick(Action *)
 
 		return toRemove;
 	};
+
+  for (std::vector<TransferRow>::const_iterator i = _items.begin(); i != _items.end(); ++i)
+  {
+    if (i->type != TRANSFER_ITEM) continue;
+    RuleItem *item = (RuleItem*)i->rule;
+    _base->getLimitedItems()->setItemLimit(item->getType(), i->qtyDst);
+  }
 
 	for (std::vector<TransferRow>::const_iterator i = _items.begin(); i != _items.end(); ++i)
 	{
@@ -979,6 +1008,20 @@ void SellState::increase()
  */
 void SellState::changeByValue(int change, int dir)
 {
+  if (_showLimits)
+  {
+    if (change == INT_MAX)
+    {
+      getRow().qtyDst = dir > 0 ? getRow().qtySrc : -1;
+    }
+    else
+    {
+      getRow().qtyDst = std::max(getRow().qtyDst + dir * change, -1);
+    }
+    updateItemStrings();
+    return;
+  }
+
 	if (dir > 0)
 	{
 		if (0 >= change || getRow().qtySrc <= getRow().amount) return;
@@ -1039,13 +1082,29 @@ void SellState::decrease()
 void SellState::updateItemStrings()
 {
 	std::ostringstream ss, ss2, ss3;
-	ss << getRow().amount;
+  //ss << (_showLimits ? getRow().qtyDst : getRow().amount);
+  if (_showLimits)
+  {
+    if (getRow().qtyDst >= 0)
+    {
+      ss << getRow().qtyDst;
+    }
+    else
+    {
+      ss << "∞";
+    }
+  }
+  else
+  {
+    ss << getRow().amount;
+  }
+
 	_lstItems->setCellText(_sel, 2, ss.str());
 	ss2 << getRow().qtySrc - getRow().amount;
 	_lstItems->setCellText(_sel, 1, ss2.str());
 	_txtSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(_total)));
 
-	if (getRow().amount > 0)
+  if (_showLimits ? getRow().type == TRANSFER_ITEM && getRow().qtyDst >= 0 : getRow().amount > 0)
 	{
 		_lstItems->setRowColor(_sel, _lstItems->getSecondaryColor());
 	}
@@ -1083,7 +1142,14 @@ void SellState::updateItemStrings()
 */
 void SellState::cbxCategoryChange(Action *)
 {
-	updateList();
+  updateList();
+}
+
+void SellState::txtSellClick(Action *)
+{
+  _showLimits = !_showLimits;
+  _txtSell->setText(_showLimits ? LocalizedText("limits") : tr("STR_SELL_SACK"));
+  updateList();
 }
 
 }

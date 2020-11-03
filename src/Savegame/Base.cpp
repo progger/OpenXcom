@@ -27,7 +27,7 @@
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/Mod.h"
-#include "ItemContainer.h"
+#include "LimitedItemContainer.h"
 #include "Soldier.h"
 #include "../Engine/Language.h"
 #include "../Mod/RuleItem.h"
@@ -54,9 +54,9 @@ namespace OpenXcom
  * Initializes an empty base.
  * @param mod Pointer to mod.
  */
-Base::Base(const Mod *mod) : Target(), _mod(mod), _scientists(0), _engineers(0), _inBattlescape(false), _retaliationTarget(false), _fakeUnderwater(false)
+Base::Base(const Mod *mod, SavedGame *save) : Target(), _mod(mod), _scientists(0), _engineers(0), _inBattlescape(false), _retaliationTarget(false), _fakeUnderwater(false)
 {
-	_items = new ItemContainer();
+  _items = new LimitedItemContainer(mod, save);
 }
 
 /**
@@ -165,6 +165,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 	}
 
 	_items->load(node["items"]);
+  _items->loadLimits(node["limits"]);
 	// Some old saves have bad items, better get rid of them to avoid further bugs
 	for (std::map<std::string, int>::iterator i = _items->getContents()->begin(); i != _items->getContents()->end();)
 	{
@@ -335,6 +336,7 @@ YAML::Node Base::save() const
 		node["crafts"].push_back((*i)->save());
 	}
 	node["items"] = _items->save();
+  node["limits"] = _items->saveLimits();
 	node["scientists"] = _scientists;
 	node["engineers"] = _engineers;
 	if (_inBattlescape)
@@ -418,6 +420,10 @@ void Base::prepareSoldierStatsWithBonuses()
 		soldier->prepareStatsWithBonuses(_mod);
 	}
 }
+
+ItemContainer *Base::getStorageItems() { return _items; }
+
+const ItemContainer *Base::getStorageItems() const { return _items; }
 
 /**
  * Returns the amount of scientists currently in the base.

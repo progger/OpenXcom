@@ -595,7 +595,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 
 	for (YAML::const_iterator i = doc["bases"].begin(); i != doc["bases"].end(); ++i)
 	{
-		Base *b = new Base(mod);
+    Base *b = new Base(mod, this);
 		b->load(*i, this, false);
 		_bases.push_back(b);
 	}
